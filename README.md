@@ -60,7 +60,7 @@ EMAIL_APP_PASSWORD=""
             "url": "URL to test",
             "type": "REST API call type (i.e. `get`, `post`)",
             "payload": "The JSON payload if a post call (optional).",
-            "query_args": "Query string arguments if a get call (optional).",
+            "query_args": "Object of query string arguments if a get call (optional).",
             "accept": ["List of acceptable HTTP status codes (i.e. [200, 304])"]
         }
     }
