@@ -66,3 +66,15 @@ EMAIL_APP_PASSWORD=""
     }
 }
 ```
+
+## Cron Job
+
+To setup the script to run on an interval, you can use cron. To setup a cron job, use `crontab -e` (depending on the VM, might need sudo access).
+
+This will setup the script to run at the start of every hour:
+
+```
+0 * * * * python3 /path/to/script
+```
+
+See [here](https://crontab.guru/every-1-hour) for testing crontab configurations. To check active cron jobs, can use `crontab -l`.
