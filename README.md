@@ -1,6 +1,6 @@
 # Service Uptime Notification Script
 
-This script can be run on through a cron job to send email notifications when a service is down. The script is content agnostic and everything is setup through a JSON file.
+This script can be run on a cron job to send email notifications when a service is down. The script is content agnostic and everything is setup through a JSON file, making it flexible enough for any project.
 
 ## Usage:
 
