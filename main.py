@@ -81,10 +81,10 @@ def run_tests(tests: Dict) -> Optional[str]:
         try:
             if rest_type == "get":
                 args = {"params": test_details.get("query_args", None)}
-                response = requests.get(url, **args)
+                response = requests.get(url=url, timeout=60, **args)
             elif rest_type == "post":
                 args = {"json": test_details.get("payload", None)}
-                response = requests.post(url, **args)
+                response = requests.post(url=url, timeout=60, **args)
             else:
                 logging.error(f"Unsupported REST type: `{rest_type}`.")
                 continue
