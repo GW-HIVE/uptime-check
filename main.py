@@ -6,6 +6,7 @@ import smtplib
 from email.mime.text import MIMEText
 import logging
 import os
+import time
 import sys
 from argparse import ArgumentParser
 from typing import Optional, Dict, List
@@ -55,13 +56,17 @@ def send_email(msg: str, contacts: Dict, metadata: Dict, failure_type: int = 0) 
         logging.error(f"Error sending email: {e}\n{traceback.format_exc()}")
 
 
-def run_tests(tests: Dict) -> Optional[str]:
+def run_tests(tests: Dict, max_retries: int = 3, retry_delay: int = 5) -> Optional[str]:
     """Runs the config tests.
 
     Parameters
     ----------
     tests: dict
         The test structures.
+    max_retries: int, optional
+        Maximum number of retry attempts for failed requests.
+    retry_delay: int, optional
+        Seconds to sleep between retries.
 
     Returns
     -------
@@ -78,29 +83,52 @@ def run_tests(tests: Dict) -> Optional[str]:
         args = None
         response = None
 
-        try:
-            if rest_type == "get":
-                args = {"params": test_details.get("query_args", None)}
-                response = requests.get(url=url, timeout=60, **args)
-            elif rest_type == "post":
-                args = {"json": test_details.get("payload", None)}
-                response = requests.post(url=url, timeout=60, **args)
-            else:
-                logging.error(f"Unsupported REST type: `{rest_type}`.")
-                continue
+        for attempt in range(max_retries):
+            try:
+                if rest_type == "get":
+                    args = {"params": test_details.get("query_args", None)}
+                    response = requests.get(url=url, timeout=60, **args)
+                elif rest_type == "post":
+                    args = {"json": test_details.get("payload", None)}
+                    response = requests.post(url=url, timeout=60, **args)
+                else:
+                    logging.error(f"Unsupported REST type: `{rest_type}`.")
+                    continue
 
-            if response.status_code not in accept_codes:
-                message = f"Test `{test_name.replace('_', ' ')}`\n"
+                if response.status_code in accept_codes:
+                    break
+
+                if attempt < max_retries - 1:
+                    logging.warning(
+                        f"Attempt {attempt + 1}/{max_retries} failed for {test_name}. "
+                        f"Status code: {response.status_code}. Retrying in {retry_delay} seconds..."
+                    )
+                    time.sleep(retry_delay)
+
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    logging.warning(
+                        f"Attempt {attempt + 1}/{max_retries} failed for {test_name} "
+                        f"with error: {str(e)}. Retrying in {retry_delay} seconds..."
+                        f"\n{traceback.format_exc()}"
+                    )
+                else:
+                    logging.error(
+                        f"All retry attempts failed for `{test_name}`: {e}\n{traceback.format_exc()}"
+                    )
+                    raise
+
+            if response is None or response.status_code not in accept_codes:
+                message = f"Test `{test_name.replace('_', ' ')}` failed after {max_retries} attempts\n"
                 message += f"\tURL: {url}\n"
                 message += f"\tExpected status codes: {accept_codes}\n"
-                message += f"\tGot: {response.status_code}\n"
+                message += (
+                    f"\tGot: {response.status_code if response else 'No response'}\n"
+                )
                 error_messages.append(message)
-                logging.error(f"{message}\nContent: {str(response.content)}")
-        except Exception as e:
-            logging.error(
-                f"Unexpected failure for `{test_name}`: {e}\n{traceback.format_exc()}"
-            )
-            raise
+                logging.error(
+                    f"{message}\nContent: {str(response.content) if response else 'No response'}"
+                )
 
     if error_messages:
         return "\n".join(error_messages)
