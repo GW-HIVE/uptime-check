@@ -118,17 +118,15 @@ def run_tests(tests: Dict, max_retries: int = 3, retry_delay: int = 5) -> Option
                     )
                     raise
 
-            if response is None or response.status_code not in accept_codes:
-                message = f"Test `{test_name.replace('_', ' ')}` failed after {max_retries} attempts\n"
-                message += f"\tURL: {url}\n"
-                message += f"\tExpected status codes: {accept_codes}\n"
-                message += (
-                    f"\tGot: {response.status_code if response else 'No response'}\n"
-                )
-                error_messages.append(message)
-                logging.error(
-                    f"{message}\nContent: {str(response.content) if response else 'No response'}"
-                )
+        if response is None or response.status_code not in accept_codes:
+            message = f"Test `{test_name.replace('_', ' ')}` failed after {max_retries} attempts\n"
+            message += f"\tURL: {url}\n"
+            message += f"\tExpected status codes: {accept_codes}\n"
+            message += f"\tGot: {response.status_code if response else 'No response'}"
+            error_messages.append(message)
+            logging.error(
+                f"{message}\nText: {str(response.text) if response else 'No text'}"
+            )
 
     if error_messages:
         return "\n".join(error_messages)
