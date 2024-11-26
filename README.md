@@ -68,6 +68,8 @@ EMAIL_APP_PASSWORD=""
 }
 ```
 
+Note: Currently only `get` and `post` calls are supported. If another REST call type is needed, can add support for with just 3 or 4 lines of code after [line 97](https://github.com/GW-HIVE/uptime-check/blob/e743140edb3214e7f7188f8da5da2802f7ae0fe7/main.py#L97).
+
 ## Cron Job
 
 To setup the script to run on an interval, you can use cron. To setup a cron job, use `crontab -e` (depending on the VM, might need sudo access).
