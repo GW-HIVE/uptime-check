@@ -77,7 +77,7 @@ def run_tests(tests: Dict, max_retries: int = 3, retry_delay: int = 5) -> Option
 
     for test_name, test_details in tests.items():
 
-        url = test_details["url"].lower().strip()
+        url = test_details["url"].strip()
         rest_type = test_details["type"].lower().strip()
         accept_codes = test_details["accept"]
         args = None
