@@ -5,11 +5,12 @@ This script can be run on a cron job to send email notifications when a service 
 ## Usage:
 
 ```
-usage: main.py [-h] -p PATH
+usage: main.py [-h] [-p PATH] [--debug]
 
 options:
   -h, --help            show this help message and exit
   -p PATH, --path PATH  Path to the config file, defaults to "./config.json".
+  --debug               Whether to also log successes
 ```
 
 ## Prerequisites

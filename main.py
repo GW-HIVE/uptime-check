@@ -56,13 +56,17 @@ def send_email(msg: str, contacts: Dict, metadata: Dict, failure_type: int = 0) 
         logging.error(f"Error sending email: {e}\n{traceback.format_exc()}")
 
 
-def run_tests(tests: Dict, max_retries: int = 3, retry_delay: int = 5) -> Optional[str]:
+def run_tests(
+    tests: Dict, debug: bool = False, max_retries: int = 3, retry_delay: int = 5
+) -> Optional[str]:
     """Runs the config tests.
 
     Parameters
     ----------
     tests: dict
         The test structures.
+    debug: bool, optional
+        Whether to also log success messages.
     max_retries: int, optional
         Maximum number of retry attempts for failed requests.
     retry_delay: int, optional
@@ -96,6 +100,11 @@ def run_tests(tests: Dict, max_retries: int = 3, retry_delay: int = 5) -> Option
                     continue
 
                 if response.status_code in accept_codes:
+                    if debug:
+                        message = f"Successfully completed test: {test_name} (on attempt {attempt + 1})\n"
+                        message += f"\tExpected one of: {accept_codes} | Got: {response.status_code}\n"
+                        message += f"Text: {str(response.text)}"
+                        logging.info(message)
                     break
 
                 if attempt < max_retries - 1:
@@ -144,6 +153,9 @@ def main() -> None:
         required=False,
         help='Path to the config file, defaults to "./config.json".',
     )
+    parser.add_argument(
+        "--debug", action="store_true", help="Whether to also log successes"
+    )
     options = parser.parse_args()
 
     try:
@@ -160,7 +172,7 @@ def main() -> None:
     load_dotenv()
 
     try:
-        test_results = run_tests(tests)
+        test_results = run_tests(tests=tests, debug=options.debug)
         if test_results is not None:
             logging.warning("API or service tests failed. Sending alert email.")
             send_email(
