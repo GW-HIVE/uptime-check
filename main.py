@@ -143,7 +143,7 @@ def main() -> None:
         "-p",
         "--path",
         default="./config.json",
-        required=True,
+        required=False,
         help='Path to the config file, defaults to "./config.json".',
     )
     options = parser.parse_args()
